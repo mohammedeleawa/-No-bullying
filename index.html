@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لعبة بطل القيم - ضد التنمر</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #a1c4fd 100%);
+            margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; color: #2d3436;
+        }
+        .game-container {
+            background: rgba(255, 255, 255, 0.95); padding: 25px 30px; border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15); max-width: 650px; width: 100%; text-align: center; border: 4px solid #ff7675;
+        }
+        .header-logo { display: flex; flex-direction: column; align-items: center; margin-bottom: 15px; }
+        .header-logo img { width: 110px; height: 110px; object-fit: cover; border-radius: 50%; border: 3px solid #6c5ce7; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); background-color: #fff; }
+        .department-title { color: #6c5ce7; margin-top: 8px; background: #f1f0ff; padding: 8px 20px; border-radius: 20px; display: inline-block; }
+        .department-title h2 { margin: 0; font-size: 1.15rem; color: #2d3436; }
+        .department-title h3 { margin: 4px 0 0 0; font-size: 0.95rem; color: #6c5ce7; font-weight: 600; }
+        .student-info-bar { display: flex; justify-content: space-between; align-items: center; background: linear-gradient(45deg, #74b9ff, #0984e3); color: white; padding: 10px 20px; border-radius: 15px; font-weight: bold; font-size: 1.05rem; margin-bottom: 20px; gap: 10px; flex-wrap: wrap; }
+        .screen { display: none; }
+        .screen.active { display: block; }
+        .input-group { margin: 15px 0; text-align: right; }
+        .input-group label { display: block; font-weight: bold; margin-bottom: 5px; color: #2d3436; }
+        .input-group input { width: 100%; padding: 12px; border: 2px solid #a29bfe; border-radius: 10px; font-size: 1rem; outline: none; font-family: inherit; }
+        .scenario-box { font-size: 1.25rem; margin-bottom: 20px; line-height: 1.6; background: #fff5f5; padding: 15px; border-radius: 15px; border-right: 6px solid #ff7675; font-weight: 600; }
+        .choice-btn { background: #ffffff; color: #2d3436; border: 2px solid #dfe6e9; padding: 12px 18px; margin: 10px 0; border-radius: 12px; font-size: 1.05rem; font-weight: 600; cursor: pointer; width: 100%; text-align: right; transition: all 0.2s ease; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); font-family: inherit; }
+        .choice-btn:hover { background: #f8fafc; border-color: #6c5ce7; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(108, 92, 231, 0.15); }
+        .choice-btn.choice-correct { background-color: #d4edda !important; border-color: #28a745 !important; color: #155724 !important; }
+        .choice-btn.choice-wrong { background-color: #f8d7da !important; border-color: #dc3545 !important; color: #721c24 !important; }
+        .choice-btn.choice-neutral { background-color: #fff3cd !important; border-color: #ffc107 !important; color: #856404 !important; }
+        .btn { background: linear-gradient(45deg, #00b894, #00cec9); color: white; border: none; padding: 12px 20px; margin: 10px 0; border-radius: 12px; font-size: 1rem; font-weight: bold; cursor: pointer; width: 100%; box-shadow: 0 4px 10px rgba(0, 184, 148, 0.3); transition: all 0.2s ease; font-family: inherit; }
+        .btn:hover { opacity: 0.92; transform: translateY(-2px); }
+        .btn-start { background: linear-gradient(45deg, #fd79a8, #e84393); font-size: 1.2rem; }
+        .feedback { margin-top: 15px; font-weight: bold; font-size: 1.1rem; min-height: 45px; padding: 10px; border-radius: 10px; }
+        .feedback:empty { display: none; }
+        .feedback.correct { background-color: #d4edda; color: #155724; }
+        .feedback.neutral { background-color: #fff3cd; color: #856404; }
+        .feedback.wrong { background-color: #f8d7da; color: #721c24; }
+        .congratulations-card { background: linear-gradient(135deg, #ffeaa7, #fab1a0); padding: 25px; border-radius: 20px; border: 3px dashed #e17055; }
+        .saving-status { font-size: 0.95rem; color: #2d3436; font-weight: bold; margin-top: 10px; }
+    </style>
+</head>
+
+<body>
+
+    <div class="game-container">
+        <div class="header-logo">
+            <div style="font-weight: bold; font-size: 1.15rem; color: #2d3436; margin-bottom: 8px;">إدارة دار السلام التعليمية</div>
+            <img src="menberlogo.jpg" alt="شعار منبر الإسلام" onerror="this.onerror=null; this.src='menberlogo.png';">
+            <div class="department-title">
+                <h2>مدارس منبر الإسلام الخاصة</h2>
+                <h3>قسم الكمبيوتر وتكنولوجيا المعلومات</h3>
+            </div>
+        </div>
+
+        <div id="info-bar" class="student-info-bar" style="display: none;">
+            <div>👤 الطالب/ـة: <span id="display-name">-</span> | 🏫 الفصل: <span id="display-class">-</span></div>
+            <div>❓ الموقف: <span id="current-question">1</span> / 10 | 🌟 النقاط: <span id="score">0</span></div>
+        </div>
+
+        <div id="start-screen" class="screen active">
+            <h1 style="color: #d63031;">🛡️ لعبة بطل القيم (ضد التنمر)</h1>
+            <p style="color: #636e72;">مرحباً بك يا بطل! يُرجى إدخال بياناتك لبدء مغامرة نشر اللطف:</p>
+
+            <div class="input-group">
+                <label for="student-name">اسم الطالب / الطالبة:</label>
+                <input type="text" id="student-name" placeholder="اكتب اسمك الثلاثي هنا..." required onkeydown="if(event.key==='Enter') startGame()">
+            </div>
+
+            <div class="input-group">
+                <label for="student-class">الفصل الدراسي:</label>
+                <input type="text" id="student-class" placeholder="مثال: 4 / 1 أو الخامس أ" required onkeydown="if(event.key==='Enter') startGame()">
+            </div>
+
+            <button class="btn btn-start" onclick="startGame()">🚀 ابدأ اللعب الآن</button>
+        </div>
+
+        <div id="game-screen" class="screen">
+            <div class="scenario-box" id="scenario-text">جاري تحميل الموقف...</div>
+            <div id="choices-container"></div>
+            <div class="feedback" id="feedback-text"></div>
+        </div>
+
+        <div id="end-screen" class="screen">
+            <div class="congratulations-card">
+                <h2 id="final-title" style="color: #d63031; font-size: 2rem;">🎉 ألف مبروك يا بطل! 🎉</h2>
+                <div style="background: white; padding: 10px 15px; border-radius: 12px; font-weight: bold; margin: 15px 0; display: inline-block;">
+                    🏆 البطل/ـة: <span id="final-student-name"></span> (<span id="final-student-class"></span>)
+                </div>
+                <p id="final-message" style="font-size: 1.15rem; color: #2d3436;">لقد أظهرت شجاعة وأخلاقاً عالية في مواجهة التنمر ونشر اللطف في المدرسة!</p>
+                <div style="font-size: 1.8rem; color: #6c5ce7; font-weight: bold; margin: 15px 0;">
+                    مجموع نقاط اللطف: <span id="final-score">0</span> / 100
+                </div>
+                <div id="saving-status" class="saving-status">⏳ جاري تسجيل بياناتك وإجاباتك في كشف النتيجة...</div>
+                <button class="btn btn-start" onclick="restartGame()">🔄 إعادة اللعب</button>
+            </div>
+        </div>
+
+        <div style="margin-top: 20px; font-size: 0.95rem; font-weight: bold; color: #6c5ce7; border-top: 1px dashed #dfe6e9; padding-top: 10px;">
+            صنعه بكل الحب : محمد عليوة
+        </div>
+    </div>
+
+    <script>
+        // ضع رابط Google Apps Script الخاص بك هنا
+        const GOOGLE_SCRIPT_URL = "";
+
+        const scenarios = [
+            {
+                text: "1. لاحظت زميلاً لك في الفناء يسخر بعض الطلاب من ملابسه، ماذا تفعل؟",
+                choices: [
+                    { text: "أتجاهل الأمر وأبتعد لكي لا أتورط.", score: 0, feedback: "التجاهل قد يعطي شعوراً للمتنمر بأن أفعاله مقبولة.", type: "neutral" },
+                    { text: "أتدخل وأدافع عنه بأسلوب راقٍ وأدعوه للعب معنا.", score: 10, feedback: "رائع! هذا تصرف شجاع يعزز ثقة زميلك ويوقف التنمر.", type: "correct" },
+                    { text: "أسخر منه لكي أضحك الآخرين.", score: -10, feedback: "خطأ! المشاركة في السخرية تعتبر نوعاً من أنواع التنمر.", type: "wrong" }
+                ]
+            },
+            {
+                text: "2. شاهدت طالباً جديداً جالساً بمفرده في الفسحة ويبدو عليه الحزن لأن البعض يرفض جلوسه معهم.",
+                choices: [
+                    { text: "أذهب إليه وأدعوه لمشاركتنا وجبة الإفطار والتعرف عليه.", score: 10, feedback: "ممتاز! الاحتواء يمنع شعور العزلة ويصنع صداقات رائعة.", type: "correct" },
+                    { text: "أتركه وشأنه، فربما يحب الوحدة.", score: 0, feedback: "مقبول، ولكن المبادرة بالسلام واللطف دائماً أجمل.", type: "neutral" },
+                    { text: "أطلب من أصدقائي الابتعاد عنه أكثر.", score: -10, feedback: "تصرف خاطئ وقاسٍ يُسمى التنمر بالإقصاء والاستبعاد.", type: "wrong" }
+                ]
+            },
+            {
+                text: "3. وصلتك رسالة جارحة على مجموعات التواصل تعليقاً على شكلك أو مستواك الدراسي.",
+                choices: [
+                    { text: "أرد عليه برسالة أسوأ وأقوم بسبه أمام الجميع.", score: -10, feedback: "الرد بالمثل يزيد المشكلة اشتعالاً ويضعك في موقف خاطئ.", type: "wrong" },
+                    { text: "أحتفظ بلقطة للشاشة (Screenshot) وأخبر ولي أمري أو معلمي.", score: 10, feedback: "تصرف حكيم وصحيح لمواجهة التنمر الإلكتروني بوعي.", type: "correct" },
+                    { text: "أبكي وأغلق الهاتف دون إخبار أي شخص.", score: 0, feedback: "الكتمان يزيد حزنك، دائماً اطلب المساعدة من الكبار.", type: "neutral" }
+                ]
+            },
+            {
+                text: "4. في حصة التربية الرياضية، تعثر أحد زملائك أثناء الجري ووقع على الأرض وضحك بعض الطلاب عليه.",
+                choices: [
+                    { text: "أسرع إليه وأساعده على النهوض وأطمئن عليه.", score: 10, feedback: "أحسنت! المساعدة والتعاطف من صفات الأبطال الحقيقيين.", type: "correct" },
+                    { text: "أضحك معهم بصوت عالٍ مثل بقية الطلاب.", score: -10, feedback: "الضحك على آلام ومواقف الآخرين يعتبر سلوكاً غير لائق.", type: "wrong" },
+                    { text: "أشاهد الموقف وسقوطه دون إبداء أي رد فعل.", score: 0, feedback: "من الأفضل دائماً مد يد العون للمحتاج.", type: "neutral" }
+                ]
+            },
+            {
+                text: "5. قام أحد زملائك بأخذ أدواتك المدرسية دون إذنك ورفض إعادتها وقال لك: 'لن تأخذها!'",
+                choices: [
+                    { text: "أضربه فوراً وأحصل على أدواتي بالقوة.", score: -10, feedback: "العنف ليس حلاً ويجعل المشكلة تتفاقم.", type: "wrong" },
+                    { text: "أتحدث معه بهدوء و وضوح، وإن أصر أتوجه للمعلم للتدخل.", score: 10, feedback: "بطل! التصرف الحكيم واللجوء للمعلم يحفظ حقك دون مشاكل.", type: "correct" },
+                    { text: "أستسلم وأترك له أشيائي وأبكي في السر.", score: 0, feedback: "من حقك التمسك بأغراضك بطريقة سليمة وإبلاغ المعلم.", type: "neutral" }
+                ]
+            },
+            {
+                text: "6. لاحظت أن هناك زميلاً يطلق ألقاباً سيئة على أحد الطلاب ويعيّره بها دائماً.",
+                choices: [
+                    { text: "أنصح الزميل بأسلوب لطيف بأن النبز بالألقاب سلوك مرفوض.", score: 10, feedback: "ممتاز! النصح بالتي هي أحسن يغير السلوكيات السيئة.", type: "correct" },
+                    { text: "أنادي الطالب بنفس اللقب الساخر لأمازحه.", score: -10, feedback: "حتى لو كان من باب المزاح، السخرية تؤذي المشاعر.", type: "wrong" },
+                    { text: "أسكت ولا أتدخل إطلاقاً.", score: 0, feedback: "السكوت عن الحق قد يجعل المتنمر يستمر في أفعاله.", type: "neutral" }
+                ]
+            },
+            {
+                text: "7. رأيت طالباً يهدد طالباً أضعف منه ويأخذ منه مصروفه اليومي في الفناء.",
+                choices: [
+                    { text: "أبلغ إدارة المدرسة أو أخصائي النشاط فوراً وبسرية.", score: 10, feedback: "تصرف ممتااااز! حماية الآخرين من الاستغلال واجب أخلاقي.", type: "correct" },
+                    { text: "أشاهد ما يحدث وأبتعد كي لا يهددني أنا أيضاً.", score: 0, feedback: "الخوف طبيعي، ولكن يمكنك إبلاغ المعلم دون أن يراك أحد.", type: "neutral" },
+                    { text: "أشجع الطالب القوي وأصفق له.", score: -10, feedback: "تشجيع الظلم والاعتداء يجعلك شريكاً في الخطأ.", type: "wrong" }
+                ]
+            },
+            {
+                text: "8. طلب المعلم تشكيل مجموعات للعمل في مشروع، ورفضت المجموعات ضم طالب بطيء التعلم.",
+                choices: [
+                    { text: "أرحب به في مجموعتي وأساعده ونعمل معاً كفريق.", score: 10, feedback: "أحسنت! التعاون والدعم يخلق بيئة مدرسية رائعة ومبدعة.", type: "correct" },
+                    { text: "أرفض وجوده معنا لأنه قد يقلل من درجات مجموعتنا.", score: -10, feedback: "التهميش والتمييز بين الزملاء تصرف غير حكيم.", type: "wrong" },
+                    { text: "أنتظر قرار المعلم دون أن أبادِر بدعوته.", score: 0, feedback: "المبادرة منك تُسعد زملاءك دائماً.", type: "neutral" }
+                ]
+            },
+            {
+                text: "9. قام شخص بنشر صورة مضحكة ومعدلة لزميل لك في الفصل على شبكة الإنترنت.",
+                choices: [
+                    { text: "لا أشارك الصورة، وأنصح بحذفها وأبلغ إدارة المدرسة.", score: 10, feedback: "رائع جداً! السلوك الرقمي الإيجابي يحمي خصوصية الجميع.", type: "correct" },
+                    { text: "أعيد إرسال الصورة لجميع أصدقائي لكي يضحكوا.", score: -10, feedback: "إعادة النشر تعتبر مساهمة مباشرة في التنمر الإلكتروني.", type: "wrong" },
+                    { text: "أشاهد الصورة وأحفظها في هاتفي فقط.", score: 0, feedback: "عدم النشر جيد، ولكن الأفضل النصح بحذفها.", type: "neutral" }
+                ]
+            },
+            {
+                text: "10. ما هو المفهوم الحقيقي لـ 'بطل القيم' في المدرسة؟",
+                choices: [
+                    { text: "هو من يحترم الجميع، ويدافع عن الضعفاء، وينشر المحبة والسلام.", score: 10, feedback: "إجابة مثالية! أنت بالفعل بطل القيم الحقيقي! 🌟", type: "correct" },
+                    { text: "هو من يظهر قوته البدنية ويخيف بقية الطلاب.", score: -10, feedback: "إظهار القوة بالإخافة هو تعريف المتنمر وليس البطل.", type: "wrong" },
+                    { text: "هو من يحصل على درجات عالية فقط ولا يهتم بالآخرين.", score: 0, feedback: "التفوق الدراسي مهم، ولكن الأخلاق والتعامل هما الأهم.", type: "neutral" }
+                ]
+            }
+        ];
+
+        let currentScenarioIndex = 0;
+        let score = 0;
+        let studentName = "";
+        let studentClass = "";
+        let studentAnswers = [];
+
+        function startGame() {
+            const nameInput = document.getElementById("student-name").value.trim();
+            const classInput = document.getElementById("student-class").value.trim();
+
+            if (!nameInput || !classInput) {
+                alert("فضلاً، يرجى كتابة اسم الطالب والفصل قبل بدء اللعب!");
+                return;
+            }
+
+            studentName = nameInput;
+            studentClass = classInput;
+            studentAnswers = [];
+
+            document.getElementById("display-name").innerText = studentName;
+            document.getElementById("display-class").innerText = studentClass;
+
+            document.getElementById("start-screen").classList.remove("active");
+            document.getElementById("info-bar").style.display = "flex";
+            document.getElementById("game-screen").classList.add("active");
+
+            loadScenario();
+        }
+
+        function loadScenario() {
+            const feedbackText = document.getElementById("feedback-text");
+            feedbackText.innerText = "";
+            feedbackText.className = "feedback";
+
+            if (currentScenarioIndex < scenarios.length) {
+                let current = scenarios[currentScenarioIndex];
+                document.getElementById("scenario-text").innerText = current.text;
+                document.getElementById("current-question").innerText = currentScenarioIndex + 1;
+
+                const choicesContainer = document.getElementById("choices-container");
+                choicesContainer.innerHTML = "";
+
+                current.choices.forEach(choice => {
+                    let btn = document.createElement("button");
+                    btn.className = "choice-btn";
+                    btn.innerText = choice.text;
+                    btn.onclick = () => selectChoice(choice, btn);
+                    choicesContainer.appendChild(btn);
+                });
+            } else {
+                showEndScreen();
+            }
+        }
+
+        function selectChoice(choice, selectedBtn) {
+            score += choice.score;
+            if (score < 0) score = 0;
+            document.getElementById("score").innerText = score;
+
+            studentAnswers.push({
+                questionNo: currentScenarioIndex + 1,
+                scenario: scenarios[currentScenarioIndex].text,
+                selectedChoice: choice.text,
+                questionScore: choice.score
+            });
+
+            const feedbackText = document.getElementById("feedback-text");
+            feedbackText.innerText = choice.feedback;
+            feedbackText.className = `feedback ${choice.type}`;
+
+            if (selectedBtn) {
+                selectedBtn.classList.add(`choice-${choice.type}`);
+            }
+
+            const buttons = document.querySelectorAll("#choices-container .choice-btn");
+            buttons.forEach(btn => btn.style.pointerEvents = "none");
+
+            currentScenarioIndex++;
+            setTimeout(() => {
+                loadScenario();
+            }, 2500);
+        }
+
+        function showEndScreen() {
+            document.getElementById("game-screen").classList.remove("active");
+            document.getElementById("end-screen").classList.add("active");
+
+            document.getElementById("final-student-name").innerText = studentName;
+            document.getElementById("final-student-class").innerText = studentClass;
+            document.getElementById("final-score").innerText = score;
+
+            const finalTitle = document.getElementById("final-title");
+            const finalMessage = document.getElementById("final-message");
+
+            if (score >= 80) {
+                finalTitle.innerText = "🎉 ألف مبروك يا بطل القيم! 🌟";
+                finalMessage.innerText = "لقد أظهرت شجاعة وأخلاقاً عالية ووعياً ممتازاً في مواجهة التنمر ونشر اللطف في المدرسة!";
+            } else if (score >= 50) {
+                finalTitle.innerText = "👏 أحسنت يا بطل! نتيجة طيبة 💫";
+                finalMessage.innerText = "لديك وعي طيب، ومع المزيد من المبادرة والشجاعة ستكون دائماً بطل القيم المثالي في مدرستك!";
+            } else {
+                finalTitle.innerText = "🌱 حظ أوفر، أعد المحاولة! 💪";
+                finalMessage.innerText = "تذكر دائماً أن مساعدة زملائك والوقوف ضد التنمر هو ما يصنع البطل الحقيقي. أعد اللعب لتتعلم الخيارات الأفضل!";
+            }
+
+            sendDataToGoogleSheets();
+        }
+
+        function sendDataToGoogleSheets() {
+            const statusDiv = document.getElementById("saving-status");
+            statusDiv.innerText = "⏳ جاري حفظ النتائج والإجابات أونلاين...";
+
+            const payload = {
+                studentName: studentName,
+                studentClass: studentClass,
+                finalScore: score,
+                answers: studentAnswers
+            };
+
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            })
+            .then(() => {
+                statusDiv.innerText = "✅ تم حفظ نتيجتك وإجاباتك بنجاح في كشف المعلم!";
+                statusDiv.style.color = "#155724";
+            })
+            .catch(err => {
+                console.error(err);
+                statusDiv.innerText = "⚠️ تعذر حفظ البيانات تلقائياً، تأكد من الاتصال بالإنترنت.";
+                statusDiv.style.color = "#721c24";
+            });
+        }
+
+        function restartGame() {
+            currentScenarioIndex = 0;
+            score = 0;
+            studentAnswers = [];
+            document.getElementById("score").innerText = score;
+
+            document.getElementById("end-screen").classList.remove("active");
+            document.getElementById("start-screen").classList.add("active");
+            document.getElementById("info-bar").style.display = "none";
+
+            document.getElementById("student-name").value = "";
+            document.getElementById("student-class").value = "";
+        }
+    </script>
+
+</body>
+
+</html>
